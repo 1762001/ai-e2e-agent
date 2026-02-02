@@ -2,15 +2,38 @@ const puppeteer = require('puppeteer');
 const config = require('../config/agent.config');
 const fs = require('fs-extra');
 const path = require('path');
-const { getAuthHeader } = require('../auth/tokenManager');
 
 let browser;
 let page;
 
+/**
+ * 🔐 Inject Angular auth state BEFORE app loads
+ */
+async function injectAuthState(page) {
+  // ⚠️ Replace values if needed, structure must match your app
+  const authState = {
+    email: "kumashwini@google.com",
+    name: "Ashwini Kumar",
+    accessToken: "AI_TEST_TOKEN",
+    idToken: "AI_TEST_TOKEN",
+    user: {
+      userid: "kumashwini",
+      email: "kumashwini@google.com",
+      domain: null
+    },
+    accessPrivilege: "ROLE_ADMIN"
+  };
+
+  await page.evaluateOnNewDocument((auth) => {
+    localStorage.setItem('certhubuser', JSON.stringify(auth));
+    localStorage.setItem('certhubls', JSON.stringify(auth));
+  }, authState);
+}
+
 async function initBrowser() {
   browser = await puppeteer.launch({
-    headless: config.puppeteer.headless,
-    slowMo: config.puppeteer.slowMo,
+    headless: false,
+    slowMo: 30,
     defaultViewport: null,
     args: ['--start-maximized']
   });
@@ -18,23 +41,23 @@ async function initBrowser() {
   page = await browser.newPage();
   page.setDefaultTimeout(config.puppeteer.defaultTimeout);
 
-  await setupAuthHeader();
-  await setupNetworkLogging();
+  // 🔥 CRITICAL: Inject auth BEFORE navigation
+  await injectAuthState(page);
 
+  await setupNetworkLogging();
   return { browser, page };
 }
 
-async function setupAuthHeader() {
-  await page.setExtraHTTPHeaders({
-    Authorization: getAuthHeader()
-  });
-}
-
 async function setupNetworkLogging() {
-  page.on('response', async (response) => {
+  page.on('response', (response) => {
+    const url = response.url();
     const status = response.status();
+
+    // Ignore Chrome / Google noise
+    if (url.includes('google.com')) return;
+
     if (status >= 400) {
-      console.log(`⚠️ API Issue: ${response.url()} → ${status}`);
+      console.log(`⚠️ API Issue: ${url} → ${status}`);
     }
   });
 }

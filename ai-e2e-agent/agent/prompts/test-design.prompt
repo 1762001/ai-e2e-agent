@@ -1,32 +1,42 @@
 module.exports = (appMap) => `
-You are a senior QA automation architect.
+You are a senior QA automation engineer.
 
-You are testing a production-grade web application.
-The application is already authenticated.
+You MUST design test cases ONLY using the information below.
+DO NOT invent routes, APIs, UI elements, or features.
 
-Application structure:
-Routes:
-${JSON.stringify(appMap.routes, null, 2)}
+====================
+DISCOVERED ROUTES
+====================
+${appMap.routes.map(r => `- ${r}`).join('\n')}
 
-APIs:
-${JSON.stringify(appMap.apis, null, 2)}
+====================
+DISCOVERED API ENDPOINTS
+====================
+${appMap.apis.map(a => `- ${a.method} ${a.url}`).join('\n')}
 
-Your task:
-1. Identify all functional test scenarios per route.
-2. Identify negative and edge cases per route and API.
-3. Identify security-sensitive scenarios.
-4. Identify UI stability and async failure risks.
-5. Do not assume correctness.
-6. Prefer tests that are likely to expose bugs.
+Rules:
+1. Every route test MUST use one of the discovered routes exactly.
+2. Every API test MUST use one of the discovered APIs exactly.
+3. Do NOT invent functionality.
+4. Prefer realistic failure scenarios.
+5. Keep tests executable by automation.
 
-Return output STRICTLY in JSON with this shape:
+Return ONLY valid JSON.
+NO markdown.
+NO explanations.
+NO comments.
+
+JSON format:
 
 {
   "tests": [
     {
       "id": "string",
-      "type": "functional | edge | negative | security | ui",
+      "type": "functional | edge | negative | security",
       "target": "route | api",
+      "route": "ONLY if target is route",
+      "url": "ONLY if target is api",
+      "method": "GET | POST | PUT | DELETE",
       "description": "string",
       "priority": "high | medium | low",
       "expectedRisk": "string"
