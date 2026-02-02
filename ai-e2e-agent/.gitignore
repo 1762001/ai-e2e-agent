@@ -31,10 +31,7 @@ coverage/
 # AI Agent Outputs
 # ===============================
 screenshots/
-logs/
-report/
-tmp/
-.cache/
+
 
 # ===============================
 # Puppeteer / Chrome
