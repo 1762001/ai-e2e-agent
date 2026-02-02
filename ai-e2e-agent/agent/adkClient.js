@@ -7,12 +7,32 @@ const vertexAI = new VertexAI({
 });
 
 const model = vertexAI.getGenerativeModel({
-  model: 'gemini-2.5-pro'
+  model: 'gemini-1.5-pro'
 });
 
 async function reason(prompt) {
-  const result = await model.generateContent(prompt);
-  return result.response.text();
+  const result = await model.generateContent({
+    contents: [
+      {
+        role: 'user',
+        parts: [{ text: prompt }]
+      }
+    ]
+  });
+
+  const candidates = result.response.candidates;
+
+  if (!candidates || candidates.length === 0) {
+    throw new Error('No candidates returned from Google ADK');
+  }
+
+  const parts = candidates[0].content.parts;
+
+  if (!parts || parts.length === 0) {
+    throw new Error('No text parts returned from Google ADK');
+  }
+
+  return parts[0].text;
 }
 
 module.exports = { reason };
