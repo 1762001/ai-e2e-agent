@@ -7,7 +7,7 @@ async function executeUITest(test, page) {
 
   try {
 
-    // SPA navigation
+    // Angular SPA navigation
     if (test.route) {
 
       await page.evaluate((route) => {
@@ -19,10 +19,10 @@ async function executeUITest(test, page) {
 
       }, test.route);
 
-      await page.waitForTimeout(1200);
+      await page.waitForTimeout(1500);
     }
 
-    // Wait for Angular
+    // Wait for Angular stability
     await page.evaluate(() => {
 
       return new Promise(resolve => {

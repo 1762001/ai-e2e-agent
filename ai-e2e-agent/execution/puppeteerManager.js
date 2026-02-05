@@ -6,34 +6,29 @@ const path = require('path');
 let browser;
 let page;
 
-/**
- * 🔐 Inject REAL session into LocalStorage
- */
-async function injectAuthState(page) {
-  const session = JSON.parse(
-    fs.readFileSync('./config/session.json', 'utf8')
-  );
-
-  await page.evaluateOnNewDocument((data) => {
-    localStorage.setItem('certhubuser', JSON.stringify(data.user));
-    localStorage.setItem('certhubls', JSON.stringify(data.session));
-  }, session);
-}
+// 🔥 Persistent Chrome Profile (stores OAuth session)
+const USER_DATA_DIR = path.join(__dirname, '../chrome-profile');
 
 async function initBrowser() {
 
   browser = await puppeteer.launch({
     headless: false,
     slowMo: 25,
+
+    // ✅ Reuse Google login session
+    userDataDir: USER_DATA_DIR,
+
     defaultViewport: null,
-    args: ['--start-maximized']
+
+    args: [
+      '--start-maximized',
+      '--disable-web-security'
+    ]
   });
 
   page = await browser.newPage();
-  page.setDefaultTimeout(config.puppeteer.defaultTimeout);
 
-  // 🔥 IMPORTANT: Inject auth BEFORE page load
-  await injectAuthState(page);
+  page.setDefaultTimeout(60000);
 
   await setupNetworkLogging();
 
