@@ -7,33 +7,24 @@ let browser;
 let page;
 
 /**
- * 🔐 Inject Angular auth state BEFORE app loads
+ * 🔐 Inject REAL session into LocalStorage
  */
 async function injectAuthState(page) {
-  // ⚠️ Replace values if needed, structure must match your app
-  const authState = {
-    email: "kumashwini@google.com",
-    name: "Ashwini Kumar",
-    accessToken: "AI_TEST_TOKEN",
-    idToken: "AI_TEST_TOKEN",
-    user: {
-      userid: "kumashwini",
-      email: "kumashwini@google.com",
-      domain: null
-    },
-    accessPrivilege: "ROLE_ADMIN"
-  };
+  const session = JSON.parse(
+    fs.readFileSync('./config/session.json', 'utf8')
+  );
 
-  await page.evaluateOnNewDocument((auth) => {
-    localStorage.setItem('certhubuser', JSON.stringify(auth));
-    localStorage.setItem('certhubls', JSON.stringify(auth));
-  }, authState);
+  await page.evaluateOnNewDocument((data) => {
+    localStorage.setItem('certhubuser', JSON.stringify(data.user));
+    localStorage.setItem('certhubls', JSON.stringify(data.session));
+  }, session);
 }
 
 async function initBrowser() {
+
   browser = await puppeteer.launch({
     headless: false,
-    slowMo: 30,
+    slowMo: 25,
     defaultViewport: null,
     args: ['--start-maximized']
   });
@@ -41,23 +32,25 @@ async function initBrowser() {
   page = await browser.newPage();
   page.setDefaultTimeout(config.puppeteer.defaultTimeout);
 
-  // 🔥 CRITICAL: Inject auth BEFORE navigation
+  // 🔥 IMPORTANT: Inject auth BEFORE page load
   await injectAuthState(page);
 
   await setupNetworkLogging();
+
   return { browser, page };
 }
 
 async function setupNetworkLogging() {
-  page.on('response', (response) => {
-    const url = response.url();
-    const status = response.status();
 
-    // Ignore Chrome / Google noise
+  page.on('response', (res) => {
+
+    const url = res.url();
+    const status = res.status();
+
     if (url.includes('google.com')) return;
 
     if (status >= 400) {
-      console.log(`⚠️ API Issue: ${url} → ${status}`);
+      console.log(`⚠️ API: ${status} → ${url}`);
     }
   });
 }
@@ -67,9 +60,16 @@ async function navigate(url) {
 }
 
 async function screenshot(name) {
-  const filePath = path.join(config.screenshots.path, name);
+
+  const filePath =
+    path.join(config.screenshots.path, name);
+
   await fs.ensureDir(config.screenshots.path);
-  await page.screenshot({ path: filePath, fullPage: true });
+
+  await page.screenshot({
+    path: filePath,
+    fullPage: true
+  });
 }
 
 async function closeBrowser() {

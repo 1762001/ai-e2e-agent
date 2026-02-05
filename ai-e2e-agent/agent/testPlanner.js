@@ -4,30 +4,42 @@ const testDesignPrompt = require('./prompts/test-design.prompt');
 const { extractJSON } = require('./utils/jsonExtractor');
 
 async function generateTestPlan() {
+
   if (!memory.appMap) {
-    throw new Error('AppMap missing. Run discovery first.');
+    throw new Error('AppMap missing');
   }
 
-  const prompt = testDesignPrompt(memory.appMap);
-  const responseText = await reason(prompt);
+  const prompt =
+    testDesignPrompt(memory.appMap);
 
-  let plan = extractJSON(responseText);
+  const response = await reason(prompt);
+
+  let plan = extractJSON(response);
 
   if (!plan || !plan.tests) {
-    throw new Error('Failed to parse AI test plan JSON');
+    throw new Error('Invalid AI test plan');
   }
 
-  // 🔥 Attach discovered routes to route tests
   const routes = memory.appMap.routes;
+  const workflows = memory.appMap.workflows;
 
-  plan.tests = plan.tests.map((test, index) => {
-    if (test.target === 'route' && routes.length > 0) {
-      test.route = routes[index % routes.length];
+  // Attach routes & workflows
+  plan.tests = plan.tests.map((test, i) => {
+
+    if (test.target === 'route' && routes.length) {
+      test.route = routes[i % routes.length];
     }
+
+    if (workflows.length) {
+      test.workflow =
+        workflows[i % workflows.length];
+    }
+
     return test;
   });
 
   memory.storeTestPlan(plan);
+
   return plan;
 }
 

@@ -1,7 +1,9 @@
 class AppMap {
+
   constructor() {
     this.routes = [];
     this.apis = [];
+    this.workflows = [];
   }
 
   addRoutes(routes) {
@@ -12,10 +14,15 @@ class AppMap {
     this.apis.push(...apis);
   }
 
+  addWorkflows(flows) {
+    this.workflows.push(...flows);
+  }
+
   summary() {
     return {
       totalRoutes: this.routes.length,
-      totalApis: this.apis.length
+      totalApis: this.apis.length,
+      totalWorkflows: this.workflows.length
     };
   }
 }

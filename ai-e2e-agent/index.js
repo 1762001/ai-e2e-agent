@@ -60,10 +60,15 @@ const { generateHTMLReport } = require('./report/htmlReport');
     await navigate(config.app.baseUrl);
     await screenshot('01-app-loaded.png');
 
-    const routes = await discoverUIRoutes(page);
-    appMap.addRoutes(routes);
-    appMap.addApis(apiMap);
+    const { scanWorkflows } =
+  require('./discovery/workflowScanner');
 
+const routes = await discoverUIRoutes(page);
+const workflows = await scanWorkflows(page);
+
+appMap.addRoutes(routes);
+appMap.addApis(apiMap);
+appMap.addWorkflows(workflows);
     memory.storeAppMap(appMap);
 
     console.log('📊 Discovery summary:', appMap.summary());

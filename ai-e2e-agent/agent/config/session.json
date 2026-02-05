@@ -1,0 +1,13 @@
+{
+  "user": {
+    "email": "kumashwini@google.com",
+    "name": "Ashwini Kumar",
+    "userid": "kumashwini",
+    "accessPrivilege": "ROLE_ADMIN"
+  },
+
+  "session": {
+    "accessToken": "PASTE_REAL_ACCESS_TOKEN",
+    "idToken": "PASTE_REAL_ID_TOKEN"
+  }
+}

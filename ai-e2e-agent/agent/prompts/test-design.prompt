@@ -1,42 +1,62 @@
 module.exports = (appMap) => `
-You are a senior QA automation engineer.
+You are a senior QA engineer testing an enterprise certificate management system.
 
-You MUST design test cases ONLY using the information below.
-DO NOT invent routes, APIs, UI elements, or features.
+This system handles:
+- Users
+- Certificates
+- Uploads
+- Approvals
+- Reports
+- Permissions
+- Audits
 
-====================
-DISCOVERED ROUTES
-====================
-${appMap.routes.map(r => `- ${r}`).join('\n')}
+Application Data:
 
-====================
-DISCOVERED API ENDPOINTS
-====================
-${appMap.apis.map(a => `- ${a.method} ${a.url}`).join('\n')}
+Routes:
+${JSON.stringify(appMap.routes, null, 2)}
 
-Rules:
-1. Every route test MUST use one of the discovered routes exactly.
-2. Every API test MUST use one of the discovered APIs exactly.
-3. Do NOT invent functionality.
-4. Prefer realistic failure scenarios.
-5. Keep tests executable by automation.
+APIs:
+${JSON.stringify(appMap.apis, null, 2)}
 
-Return ONLY valid JSON.
-NO markdown.
-NO explanations.
-NO comments.
+Workflows:
+${JSON.stringify(appMap.workflows, null, 2)}
 
-JSON format:
+Instructions:
+
+1. Identify real business flows:
+   - Create
+   - Approve
+   - Reject
+   - Export
+   - Delete
+   - Search
+   - Audit
+   - Download
+
+2. For each flow generate:
+   - Success scenario
+   - Failure scenario
+   - Permission violation
+   - Data integrity risk
+
+3. Focus on:
+   - Authorization
+   - Security
+   - Compliance
+   - Data loss
+   - Race conditions
+
+4. Ignore trivial navigation tests.
+
+Return ONLY valid JSON:
 
 {
   "tests": [
     {
       "id": "string",
-      "type": "functional | edge | negative | security",
+      "flow": "string",
+      "type": "functional | security | permission | data",
       "target": "route | api",
-      "route": "ONLY if target is route",
-      "url": "ONLY if target is api",
-      "method": "GET | POST | PUT | DELETE",
       "description": "string",
       "priority": "high | medium | low",
       "expectedRisk": "string"
